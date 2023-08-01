@@ -1014,11 +1014,17 @@ public class Peripheral extends BluetoothGattCallback {
             characteristic.setWriteType(writeType);
 
             if (data.length <= maxByteSize) {
-                if (!doWrite(characteristic, data, callback)) {
-                    callback.invoke("Write failed");
-                } else {
-                    if (BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE == writeType) {
+                if (BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE == writeType) {
+                    if (doWrite(characteristic, data, null)) {
                         callback.invoke();
+                    }
+                    else {
+                        callback.invoke("Write failed");
+                    }
+                }
+                else {
+                    if (!doWrite(characteristic, data, callback)) {
+                        callback.invoke("Write failed");
                     }
                 }
             } else {
@@ -1051,14 +1057,14 @@ public class Peripheral extends BluetoothGattCallback {
                 } else {
                     try {
                         boolean writeError = false;
-                        if (!doWrite(characteristic, firstMessage, callback)) {
+                        if (!doWrite(characteristic, firstMessage, null)) {
                             writeError = true;
                             callback.invoke("Write failed");
                         }
                         if (!writeError) {
                             Thread.sleep(queueSleepTime);
                             for (byte[] message : splittedMessage) {
-                                if (!doWrite(characteristic, message, callback)) {
+                                if (!doWrite(characteristic, message, null)) {
                                     writeError = true;
                                     callback.invoke("Write failed");
                                     break;
