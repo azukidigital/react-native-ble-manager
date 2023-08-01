@@ -1056,27 +1056,33 @@ public class Peripheral extends BluetoothGattCallback {
                     }
                 } else {
                     try {
-                        boolean writeError = false;
                         if (!doWrite(characteristic, firstMessage, null)) {
-                            writeError = true;
-                            callback.invoke("Write failed");
+                            if (callback != null) {
+                                callback.invoke("Write failed");
+                                callback = null;
+                            }
                         }
-                        if (!writeError) {
+                        if (callback != null) {
                             Thread.sleep(queueSleepTime);
                             for (byte[] message : splittedMessage) {
                                 if (!doWrite(characteristic, message, null)) {
-                                    writeError = true;
-                                    callback.invoke("Write failed");
+                                    if (callback != null) {
+                                        callback.invoke("Write failed");
+                                        callback = null;
+                                    }
                                     break;
                                 }
                                 Thread.sleep(queueSleepTime);
                             }
-                            if (!writeError) {
+                            if (callback != null) {
                                 callback.invoke();
                             }
                         }
                     } catch (InterruptedException e) {
-                        callback.invoke("Error during writing");
+                        if (callback != null) {
+                            callback.invoke("Error during writing");
+                            callback = null;
+                        }
                     }
                 }
             }
