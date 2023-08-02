@@ -1055,33 +1055,35 @@ public class Peripheral extends BluetoothGattCallback {
                         callback.invoke("Write failed");
                     }
                 } else {
+                    // Copy to a variable or callback will not be effectively final
+                    Callback cb = callback;
                     try {
                         if (!doWrite(characteristic, firstMessage, null)) {
-                            if (callback != null) {
-                                callback.invoke("Write failed");
-                                callback = null;
+                            if (cb != null) {
+                                cb.invoke("Write failed");
+                                cb = null;
                             }
                         }
-                        if (callback != null) {
+                        if (cb != null) {
                             Thread.sleep(queueSleepTime);
                             for (byte[] message : splittedMessage) {
                                 if (!doWrite(characteristic, message, null)) {
-                                    if (callback != null) {
-                                        callback.invoke("Write failed");
-                                        callback = null;
+                                    if (cb != null) {
+                                        cb.invoke("Write failed");
+                                        cb = null;
                                     }
                                     break;
                                 }
                                 Thread.sleep(queueSleepTime);
                             }
-                            if (callback != null) {
-                                callback.invoke();
+                            if (cb != null) {
+                                cb.invoke();
                             }
                         }
                     } catch (InterruptedException e) {
-                        if (callback != null) {
-                            callback.invoke("Error during writing");
-                            callback = null;
+                        if (cb != null) {
+                            cb.invoke("Error during writing");
+                            cb = null;
                         }
                     }
                 }
